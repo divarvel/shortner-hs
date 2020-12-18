@@ -4,8 +4,11 @@ module Main where
 
 import           Env
 import           Network.Wai.Handler.Warp
+import           Network.Wai.Metrics
 import           Servant.API.Generic
 import           Servant.Server
+import           System.Metrics
+import           System.Remote.Monitoring.Statsd
 
 import qualified API
 import qualified DB
@@ -39,6 +42,10 @@ type Ctx = '[BasicAuthCheck ()]
 
 runServer :: Config -> IO ()
 runServer c@Config{..} = do
+  store <- newStore
+  registerGcMetrics store
+  waiMetrics <- registerWaiMetrics store
+  forkStatsd defaultStatsdOptions store
   pool <- DB.mkPool pgUri
   let api = genericApi @API.API Proxy
       server = hoistServerWithContext
@@ -47,4 +54,4 @@ runServer c@Config{..} = do
         (Server.injectEnv pool)
         Server.server
       app = serveWithContext api (ctx c) server
-  run port app
+  run port $ metrics waiMetrics $ app
