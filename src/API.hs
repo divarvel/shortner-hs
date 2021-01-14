@@ -16,7 +16,8 @@ import           Servant.API.Generic
 import           Types
 
 data API m = API
-  { redirect      :: m :- Capture "code" Text :> Get '[JSON] NoContent
+  { redirectRoot  :: m :- Get '[JSON] NoContent
+  , redirect      :: m :- Capture "code" Text :> Get '[JSON] NoContent
   , managementApi :: m :- BasicAuth "URL Management" () :> "api" :> "urls" :> ToServantApi ManagementAPI
   }
   deriving (Generic)

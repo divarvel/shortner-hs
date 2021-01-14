@@ -25,7 +25,8 @@ injectEnv = flip runReaderT
 
 server :: Server (ToServantApi API)
 server = genericServerT $ API
- { redirect      = redirectEndpoint
+ { redirectRoot  = redirectEndpoint ""
+ , redirect      = redirectEndpoint
  , managementApi = \() -> managementApiServer
  }
 
